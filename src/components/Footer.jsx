@@ -145,9 +145,20 @@ const Footer = () => {
                 <span className="relative z-10">Privacy Policy</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-600/20 to-purple-600/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -inset-2"></div>
               </a>
-              <a className="group relative hover:text-white transition-colors duration-300">
+              <a
+                tabIndex={0}
+                className="group relative hover:text-white transition-colors duration-300 cursor-pointer"
+              >
                 <span className="relative z-10">Terms of Service</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-primary-600/20 to-purple-600/20 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -inset-2"></div>
+                <span
+                  role="tooltip"
+                  className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-3 w-64 -translate-x-1/2 rounded-lg bg-gray-900 p-3 text-xs leading-relaxed text-gray-200 opacity-0 shadow-xl ring-1 ring-white/10 transition-opacity duration-300 group-hover:opacity-100 group-focus:opacity-100"
+                >
+                  By using JobPortal, you agree to our Terms of Service. These
+                  govern your access to and use of the platform, including your
+                  rights and responsibilities when applying for or posting jobs.
+                </span>
               </a>
               <a
                 tabIndex={0}
