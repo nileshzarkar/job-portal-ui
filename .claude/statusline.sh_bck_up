@@ -1,0 +1,48 @@
+#!/bin/bash
+# Claude Code status line
+# Shows: model display name + a context-usage progress bar with percentage
+# Lives inside the project repo: .claude/statusline.sh
+#
+# Parses the JSON payload with `node` instead of `jq` so it works on machines
+# that don't have jq installed (node ships with this repo's toolchain).
+
+input=$(cat)
+
+# Pull both fields out in one node call: "<model>\t<used_percentage>"
+parsed=$(printf '%s' "$input" | node -e '
+  let raw = "";
+  process.stdin.on("data", d => raw += d);
+  process.stdin.on("end", () => {
+    let o = {};
+    try { o = JSON.parse(raw); } catch (e) {}
+    const model = (o.model && o.model.display_name) || "unknown";
+    const used = (o.context_window && o.context_window.used_percentage) || 0;
+    process.stdout.write(model + "\t" + used);
+  });
+' 2>/dev/null)
+
+model=${parsed%%$'\t'*}
+used=${parsed#*$'\t'}
+[ -z "$model" ] && model="unknown"
+[ -z "$used" ] && used=0
+
+# used may come through as a float (e.g. 12.3456) -> round to nearest int
+used_int=$(printf '%.0f' "$used" 2>/dev/null || echo 0)
+[ "$used_int" -lt 0 ] 2>/dev/null && used_int=0
+[ "$used_int" -gt 100 ] 2>/dev/null && used_int=100
+
+bar_width=20
+filled=$(( used_int * bar_width / 100 ))
+empty=$(( bar_width - filled ))
+
+bar=""
+i=0
+while [ "$i" -lt "$filled" ]; do bar="${bar}#"; i=$((i + 1)); done
+i=0
+while [ "$i" -lt "$empty" ]; do bar="${bar}-"; i=$((i + 1)); done
+
+# Dim colors so the status line doesn't overpower the terminal
+DIM="\033[2m"
+RESET="\033[0m"
+
+printf "${DIM}%s${RESET}  [${DIM}%s${RESET}] ${DIM}%s%%${RESET}\n" "$model" "$bar" "$used_int"
